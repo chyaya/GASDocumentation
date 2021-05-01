@@ -1,7 +1,7 @@
 ﻿# GASDocumentation-KR
 개인적인 공부 차원에서 번역을 진행중입니다.
-원본 문서: https://github.com/tranek/GASDocumentation
-오역 신고: chyaya@msn.com
+* 원본 문서: https://github.com/tranek/GASDocumentation
+* 오역 신고: chyaya@msn.com
 
 # GASDocumentation
 이 문서는 언리얼 엔진 4의 GameplayAbilitySystem plugin (GAS)에 대하여 제가 이해한 것들을 기록한 것이며 간단한 샘플 프로젝트를 포함합니다. 이것은 공식 문서가 아니며, 저는 에픽게임즈에 소속되어 있지 않고 이 프로젝트도 에픽게임즈의 주관이 아닙니다. 저는 이 문서에서 제공하는 정보의 정확성을 보장드릴 수 없습니다.
@@ -15,9 +15,9 @@
 그리고, 최고의 문서는 '플러그인의 소스 코드'라는 것을 잊지마세요.
 
 <a name="table-of-contents"></a>
-## Table of Contents
+## 목차
 
-> 1. [Intro to the GameplayAbilitySystem Plugin](#intro)
+> 1. [GameplayAbilitySystem 플러그인 소개](#intro)
 > 1. [Sample Project](#sp)
 > 1. [Setting Up a Project Using GAS](#setup)
 > 1. [Concepts](#concepts)  
@@ -165,8 +165,8 @@
 >    * [4.24](#changelog-4.24)
          
 <a name="intro"></a>
-## 1. Intro to the GameplayAbilitySystem Plugin
-[공식 문서](https://docs.unrealengine.com/ko-KR/Gameplay/GameplayAbilitySystem/index.html)로 부터 발췌:
+## 1. GameplayAbilitySystem 플러그인 소개
+[공식 문서](https://docs.unrealengine.com/ko-KR/Gameplay/GameplayAbilitySystem/index.html)에서:
 > Gameplay Ability System은 RPG나 MOBA에 볼 수 있는 캐릭터 능력(Ability)들과 비슷한 것을 만들기 위해 설계된 매우 유연한 프레임워크입니다. 게임에서 캐릭터가 사용할 수 있는 스킬 또는 상태 효과, 이런 스킬의 결과로 다양한 수치들을 닳게 할 수 있는 상태 효과, 스킬의 사용을 제약하기 위한 '쿨 다운' 타이머 또는 마나와 같은 자원 소모량을 구현할 수 있습니다. 스킬을 레벨업함에 따라 파티클 이펙트나 사운드 효과도 다르게 설정할 수 있습니다. 간단히 말해서 이 시스템은 캐릭터의 스킬을 설계하고 구현하고 네트워크 동기화를 하는 일을 도와줍니다. 캐릭터 점프와 같은 간단한 것에서 부터, 요즘 나오는 RPG나 MOBA에서 볼 수 있는 당신이 가장 좋아하는 캐릭터의 굉장히 복잡한 스킬까지 구현할 수 있습니다.
 
 GameplayAbilitySystem 플러그인은 에픽 게임즈가 구현하였으며 언리얼 엔진 4 (UE4)에 포함되었습니다. 그리고 파라곤과 포트나이트와 같은 AAA 상용 게임에서 전투에 대한 테스트를 거쳤습니다.
@@ -194,7 +194,12 @@ Current issues with GAS:
 * Cannot predict the removal of `GameplayEffects`. We can however predict adding `GameplayEffects` with the inverse effects, effectively removing them. This is not always appropriate or feasible and still remains an issue.
 * Lack of boilerplate templates, multiplayer examples, and documentation. Hopefully this helps with that!
 
-**[⬆ Back to Top](#table-of-contents)**
+GAS의 알려진 문제:
+* `GameplayEffect` 지연시간에 의한 조정 문제 (GAS는 Ability의 쿨 다운을 예측할 수 없습니다. 따라서 짧은 쿨 타임을 가진 무기의 경우, 지연시간이 더 긴 플레이어가 지연시간이 짧은 플레이어에 비해 느린 빈도로 발사됩니다)
+* `GameplayEffects`를 제거하는 것을 예측할 수 없습니다. 하지만 반대되는 효과를 가진 `GameplayEffects`를 추가하는 것으로, 원래의 효과가 제거되는 것처럼 할 수는 있습니다. 하지만 이것이 항상 적용할 수 있는 방법은 아니기 때문에, 여전히 문제되는 경우가 있습니다.
+* 일반적으로 쓸 수 있는 템플릿, 멀티 플레이 예제 그리고 문서화가 부족합니다. 그런 부분에서 이 문서가 도움이 되길 바랍니다.
+
+**[⬆ 맨 위로](#table-of-contents)**
 
 <a name="sp"></a>
 ## 2. Sample Project
