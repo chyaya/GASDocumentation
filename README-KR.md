@@ -172,12 +172,12 @@
 GameplayAbilitySystem 플러그인은 에픽 게임즈가 구현하였으며 언리얼 엔진 4 (UE4)에 포함되었습니다. 그리고 파라곤과 포트나이트와 같은 AAA 상용 게임에서 전투에 대한 테스트를 거쳤습니다.
 
 이 플러그인은 다음과 같은 싱글 및 멀티 플레이 게임에서 바로 사용 가능한 솔루션을 제공합니다:
-* 비용이나 쿨 다운이 있을 레벨 기반의 캐릭터 능력 또는 스킬 ([GameplayAbilities](#concepts-ga))
+* 비용이나 쿨 다운이 있는 레벨 기반의 캐릭터 능력 또는 스킬 ([GameplayAbilities](#concepts-ga))
 * 액터가 가지고 있는 수치적 `Attributes`을 변경하는 작업 ([Attributes](#concepts-a))
-* 액터에 상태 효과를 적용하기 ([GameplayEffects](#concepts-ge))
-* 액터에  `GameplayTags`를 적용하기 ([GameplayTags](#concepts-gt))
-* 시각적 또는 청각적 효과를 생성하기 ([GameplayCues](#concepts-gc))
-* 위에서 언급한 모든 것들을 Replication하기
+* 액터에 상태 효과를 적용하는 작업 ([GameplayEffects](#concepts-ge))
+* 액터에  `GameplayTags`를 적용하는 작업 ([GameplayTags](#concepts-gt))
+* 시각적 또는 청각적 효과를 생성하는 작업 ([GameplayCues](#concepts-gc))
+* 위에서 언급한 모든 것들을 Replication하는 작업
 
 멀티 플레이 게임에서 GAS는 다음 과 같은 [client-side prediction](#concepts-p)을 지원합니다:
 * 능력(Ability) 활성화
@@ -188,11 +188,6 @@ GameplayAbilitySystem 플러그인은 에픽 게임즈가 구현하였으며 언
 * `RootMotionSource`를 이용한 이동을 지원합니다. 이 기능은 `CharacterMovementComponent`과 연결됩니다.
 
 **GAS는 반드시 C++에서 설정되어야합니다.**, 하지만 `GameplayAbilities` 와 `GameplayEffects` 는 디자이너틀 통해 블루프린트에서 생성될 수 있습니다.
-
-Current issues with GAS:
-* `GameplayEffect` latency reconciliation (can't predict ability cooldowns resulting in players with higher latencies having lower rate of fire for low cooldown abilities compared to players with lower latencies).
-* Cannot predict the removal of `GameplayEffects`. We can however predict adding `GameplayEffects` with the inverse effects, effectively removing them. This is not always appropriate or feasible and still remains an issue.
-* Lack of boilerplate templates, multiplayer examples, and documentation. Hopefully this helps with that!
 
 GAS의 알려진 문제:
 * `GameplayEffect` 지연시간에 의한 조정 문제 (GAS는 Ability의 쿨 다운을 예측할 수 없습니다. 따라서 짧은 쿨 타임을 가진 무기의 경우, 지연시간이 더 긴 플레이어가 지연시간이 짧은 플레이어에 비해 느린 빈도로 발사됩니다)
@@ -289,17 +284,21 @@ That's all that you have to do to enable GAS. From here, add an [`ASC`](#concept
 
 <a name="concepts-asc"></a>
 ### 4.1 Ability System Component
-The `AbilitySystemComponent` (`ASC`) is the heart of GAS. It's a `UActorComponent` ([`UAbilitySystemComponent`](https://docs.unrealengine.com/en-US/API/Plugins/GameplayAbilities/UAbilitySystemComponent/index.html)) that handles all interactions with the system. Any `Actor` that wishes to use [`GameplayAbilities`](#concepts-ga), have [`Attributes`](#concepts-a), or receive [`GameplayEffects`](#concepts-ge) must have one `ASC` attached to them. These objects all live inside of and are managed and replicated by (with the exception of `Attributes` which are replicated by their [`AttributeSet`](#concepts-as)) the `ASC`. Developers are expected but not required to subclass this.
 
-The `Actor` with the `ASC` attached to it is referred to as the `OwnerActor` of the `ASC`. The physical representation `Actor` of the `ASC` is called the `AvatarActor`. The `OwnerActor` and the `AvatarActor` can be the same `Actor` as in the case of a simple AI minion in a MOBA game. They can also be different `Actors` as in the case of a player controlled hero in a MOBA game where the `OwnerActor` is the `PlayerState` and the `AvatarActor` is the hero's `Character` class. Most `Actors` will have the `ASC` on themselves. If your `Actor` will respawn and need persistence of `Attributes` or `GameplayEffects` between spawns (like a hero in a MOBA), then the ideal location for the `ASC` is on the `PlayerState`.
+`AbilitySystemComponent` (`ASC`) 는 GAS의 심장입니다. 이것은 GAS와의 모든 상호작용을 처리하는 `UActorComponent` ([`UAbilitySystemComponent`](https://docs.unrealengine.com/ko-KR/API/Plugins/GameplayAbilities/UAbilitySystemComponent/index.html)) 입니다. 어떤 `Actor`이던지 [`GameplayAbilities`](#concepts-ga)를 사용하거나, [`Attributes`](#concepts-a)를 갖거나 또는 [`GameplayEffects`](#concepts-ge)를 받기를 원한다면 반드시 하나의 `ASC`를 컴포넌트로 붙여야합니다. 앞서 언급한 객체들(GameplayAbilities, Attributes, GameplayEffects)은 모두 `ASC`의 내부에 있으며 `ASC`에 의해 관리 및 Replicated 됩니다. (예외적으로 `Attributes`는 자신을 포함하는 [`AttributeSet`](#concepts-as)을 통해 Replicated됩니다). 개발자들은 보통 `ASC`를 상속한 클래스를 만들어 사용하곤 합니다. 하자만 그것이 필수는 아닙니다.
 
-**Note:** If your `ASC` is on your `PlayerState`, then you will need to increase the `NetUpdateFrequency` of your `PlayerState`. It defaults to a very low value on the `PlayerState` and can cause delays or perceived lag before changes to things like `Attributes` and `GameplayTags` happen on the clients. Be sure to enable [`Adaptive Network Update Frequency`](https://docs.unrealengine.com/en-US/Gameplay/Networking/Actors/Properties/index.html#adaptivenetworkupdatefrequency), Fortnite uses it.
+`ASC`를 컴포넌트로 붙인 `Actor`는 `ASC`로 부터 `OwnerActor`로 참조됩니다. `ASC`의 `Actor`의 물리적인 실체는 `AvatarActor`로 불립니다. MOBA의 단순한 AI를 가진 미니언 같은 경우에는 `OwnerActor`와 `AvatarActor`는 같은 `Actor`가 될 수 있습니다. MOBA에서 플레이어가 컨트롤하는 영웅의 같은 경우에는 두 객체가 다를 수 있습니다. 이 때 `OwnerActor`는 `PlayerState`이며, `AvataActor`는 영웅의 `Character` class가 될 것입니다. 대부분의 `Actor`는 `ACS`를 자신이 직접 소유합니다. 만일 당신의 `Actor`가 리스폰되고 `Attributes` 또는 `GameplayEffects`에 대한 지속성이 (MOBA의 영웅처럼) 리스폰 간에 필요하다면, 이상적인 `ASC`의 위치는 `PlayerState`가 될 것입니다.
 
-Both, the `OwnerActor` and the `AvatarActor` if different `Actors`, should implement the `IAbilitySystemInterface`. This interface has one function that must be overriden, `UAbilitySystemComponent* GetAbilitySystemComponent() const`, which returns a pointer to its `ASC`. `ASCs` interact with each other internally to the system by looking for this interface function.
+**노트:** 만약 당신의 `ASC`가 `PlayerState`에 있다면, `PlayerState`의 `NetUpdateFrequency`를 증가시켜야 할 겁니다. `PlayerState`의 경우 업데이트 기본값이 매우 낮기 때문에 `Attributes`나 `GameplayTags`가 클라이언트에 반영되기 전에 딜레이나 눈에 보이는 렉이 발생할 수 있습ㄴ다. [`Adaptive Network Update Frequency`](https://docs.unrealengine.com/en-US/Gameplay/Networking/Actors/Properties/index.html#adaptivenetworkupdatefrequency)를 활성화하세요. 포트나이트에서 사용하는 방법입니다.
 
-The `ASC` holds its current active `GameplayEffects` in `FActiveGameplayEffectsContainer ActiveGameplayEffects`.
+`OwnerActor`와 `AvataActor`가 다른 `Actor`인 경우, 각각 `IAbilitySystemInterface`를 구현해야합니다. 이 인터페이스에는 반드시 override해야하는 함수(`UAbilitySystemComponent* GetAbilitySystemComponent() const`)가 하나 있습니다. 이 함수는 `Actor`가 가진 `ASC`의 포인터를 리턴합니다. 시스템 내부에서 `ASC`가 서로 상호작용할 때 이 인터페이스 함수를 사용하게 됩니다.
+
+`ASC`는 현재 활성화된 `GameplayEffects`를 `FActiveGameplayEffectsContainer ActiveGameplayEffects`에 보관합니다.
 
 The `ASC` holds its granted `Gameplay Abilities` in `FGameplayAbilitySpecContainer ActivatableAbilities`. Any time that you plan to iterate over `ActivatableAbilities.Items`, be sure to add `ABILITYLIST_SCOPE_LOCK();` above your loop to lock the list from changing (due to removing an ability). Every `ABILITYLIST_SCOPE_LOCK();` in scope increments `AbilityScopeLockCount` and then decrements when it falls out of scope. Do not try to remove an ability inside the scope of `ABILITYLIST_SCOPE_LOCK();` (the clear ability functions check `AbilityScopeLockCount` internally to prevent removing abilities if the list is locked).
+
+ `ASC`는 획득한 `Gameplay Abilities`를 `FGameplayAbilitySpecContainer ActivatableAbilities`에 보관합니다. 만약 `ActivatableAbilities.Items`를 순회하려고 한다면, 리스트가 변경되는 것(특히 Ability가 제거되는 것)을 방지하기 위해 반복문의 상단에 반드시 `ABILITYLIST_SCOPE_LOCK();`를 추가하세요. 모든 `ABILITYLIST_SCOPE_LOCK();`는 Scope 안에서 `AbilityScopeLockCount`를 증가시키고 Scope가 끝나면 감소시킵니다. `ABILITYLIST_SCOPE_LOCK();`의 범위 안에서 ability를 삭제하려고 하지마세요 (clear ability 함수들은 리스트가 잠겨있는 상태에서 ability를 지우는 것을 방지하기 위해 내부에서 `AbilityScopeLockCount`를 확인합니다).
+
 
 <a name="concepts-asc-rm"></a>
 ### 4.1.1 Replication Mode
