@@ -1,4 +1,4 @@
-﻿# GASDocumentation-KR
+# GASDocumentation-KR
 개인적인 공부 차원에서 번역을 진행중입니다.
 * 원본 문서: https://github.com/tranek/GASDocumentation
 * 오역 신고: chyaya@msn.com
@@ -8,7 +8,7 @@
 
 이 문서의 목적은 GAS의 핵심 개념과 GAS의 class들에 대해서 설명하는 것입니다. 또 이것을 사용하면서 제가 경험한 것들에 대해서도 추가적으로 기록하였습니다. GAS 커뮤니티의 사용자 사이에서 전해지는 '커뮤니티 만의 지식'들도 있는데 여기에서 제가 알고 있는 모든 것을 공유하고자합니다.
 
-이 샘플 프로젝트과 문서는 현재 **언리얼 엔진 4.26**을 바탕으로 만들어졌습니다. 이 문서에는 언리얼 엔진의 이전 버전에 대한 브랜치도 있지만, 더 이상 업데이트되고 있지 않기 떄문에 버그나 오래된 정보가 있을 수도 있습니다.
+이 샘플 프로젝트과 문서는 현재 **언리얼 엔진 4.26**을 바탕으로 만들어졌습니다. 이 문서에는 언리얼 엔진의 이전 버전에 대한 브랜치도 있지만, 더 이상 업데이트되고 있지 않기 때문에 버그나 오래된 정보가 있을 수도 있습니다.
 
 [GASShooter](https://github.com/tranek/GASShooter) 는 자매 프로젝트이며 멀티플레이 FPS/TPS를 구현하기 위한 고급 기술을 보여드리기 위해 만들었습니다.
 
@@ -169,7 +169,7 @@
 [공식 문서](https://docs.unrealengine.com/ko-KR/Gameplay/GameplayAbilitySystem/index.html)에서:
 > Gameplay Ability System은 RPG나 MOBA에 볼 수 있는 캐릭터 능력(Ability)들과 비슷한 것을 만들기 위해 설계된 매우 유연한 프레임워크입니다. 게임에서 캐릭터가 사용할 수 있는 스킬 또는 상태 효과, 이런 스킬의 결과로 다양한 수치들을 닳게 할 수 있는 상태 효과, 스킬의 사용을 제약하기 위한 '쿨 다운' 타이머 또는 마나와 같은 자원 소모량을 구현할 수 있습니다. 스킬을 레벨업함에 따라 파티클 이펙트나 사운드 효과도 다르게 설정할 수 있습니다. 간단히 말해서 이 시스템은 캐릭터의 스킬을 설계하고 구현하고 네트워크 동기화를 하는 일을 도와줍니다. 캐릭터 점프와 같은 간단한 것에서 부터, 요즘 나오는 RPG나 MOBA에서 볼 수 있는 당신이 가장 좋아하는 캐릭터의 굉장히 복잡한 스킬까지 구현할 수 있습니다.
 
-GameplayAbilitySystem 플러그인은 에픽 게임즈가 구현하였으며 언리얼 엔진 4 (UE4)에 포함되었습니다. 그리고 파라곤과 포트나이트와 같은 AAA 상용 게임에서 전투에 대한 테스트를 거쳤습니다.
+GameplayAbilitySystem 플러그인은 에픽 게임즈가 구현하였으며 언리얼 엔진 4 (UE4)에 포함되었습니다. 그리고 파라곤과 포트나이트와 같은 AAA 상용 게임에서 필드 테스트를 충분이 거쳤습니다.
 
 이 플러그인은 다음과 같은 싱글 및 멀티 플레이 게임에서 바로 사용 가능한 솔루션을 제공합니다:
 * 비용이나 쿨 다운이 있는 레벨 기반의 캐릭터 능력 또는 스킬 ([GameplayAbilities](#concepts-ga))
@@ -299,24 +299,26 @@ That's all that you have to do to enable GAS. From here, add an [`ASC`](#concept
 
 
 <a name="concepts-asc-rm"></a>
-### 4.1.1 Replication Mode
-The `ASC` defines three different replication modes for replicating `GameplayEffects`, `GameplayTags`, and `GameplayCues` - `Full`, `Mixed`, and `Minimal`. `Attributes` are replicated by their `AttributeSet`.
+### 4.1.1 리플리케이션 모드
+`ASC`는 `GameplayEffects`, `GameplayTags`, `GameplayCues`를 리플리케이션하기 위해 `Full`, `Mixed`, `Minimal`이라는 세가지 레플리케이션 모드를 제공합니다. `Attributes`는 자신이 속해있는 `AttributeSet`을 통해 리플리케이션됩니다.
 
-| Replication Mode   | When to Use                             | Description                                                                                                                    |
+
+| 리플리케이션 모드   | 다음에서 사용함                           | 비고                                                                                                                           |
 | ------------------ | --------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
-| `Full`             | Single Player                           | Every `GameplayEffect` is replicated to every client.                                                                          |
-| `Mixed`            | Multiplayer, player controlled `Actors` | `GameplayEffects` are only replicated to the owning client. Only `GameplayTags` and `GameplayCues` are replicated to everyone. |
-| `Minimal`          | Multiplayer, AI controlled `Actors`     | `GameplayEffects` are never replicated to anyone. Only `GameplayTags` and `GameplayCues` are replicated to everyone.           |
+| `Full`             | 싱글 플레이                              | 모든 `GameplayEffect`는 모든 클라이언트에게 리플리케이션됩니다.                                                                    |
+| `Mixed`            | 멀티 플레이, 플레이어가 조종하는 `Actors` | `GameplayEffects`는 소유중인 클라이언트에게만 리플리케이션됩니다. 오직 `GameplayTags`와 `GameplayCues`는 모두에게 리플리케이션됩니다.  |
+| `Minimal`          | 멀티 플레이, AI가 조종하는 `Actors`      | `GameplayEffects`는 아무에게도 리플리케이션되지 않습니다. 오직 `GameplayTags`와 `GameplayCues`는 모두에게 리플리케이션됩니다.         |
 
-**Note:** `Mixed` replication mode expects the `OwnerActor's` `Owner` to be the `Controller`. `PlayerState's` `Owner` is the `Controller` by default but `Character's` is not. If using `Mixed` replication mode with the `OwnerActor` not the `PlayerState`, then you need to call `SetOwner()` on the `OwnerActor` with a valid `Controller`.
+**노트:** `Mixed` 리플리케이션 모드는 `OwnerActor`의 `Owner`가 `Controller`라는 것을 가정하고 만들어졌습니다. `PlayerState`의 `Owner`는 기본적으로 `Controller`이지만 `Character`는 그렇지 않습니다. 만일 `OwnerActor`가 `PlayerState`가 아닐 때 `Mixed` 리플리케이션 모드를 사용하고자 한다면, 반드시 `OwnerActor`에서 `SetOwner()`를 호출을 통해 유효한 `Controller`를 전달해야합니다.
 
-Starting with 4.24, `PossessedBy()` now sets the owner of the `Pawn` to the new `Controller`.
+4.24에서 부터는, `PossessedBy()`가 `Pawn`의 Owner를 새로운 `Controller`로 세팅하는 것으로 변경되었습니다.
+
 
 **[⬆ Back to Top](#table-of-contents)**
 
 <a name="concepts-asc-setup"></a>
-### 4.1.2 Setup and Initialization
-`ASCs` are typically constructed in the `OwnerActor's` constructor and explicitly marked replicated. **This must be done in C++**.
+### 4.1.2 설정과 초기화
+`ASC`들은 일반적으로 `OwnerActor`의 생성자에서 초기화되고 명시적으로 리플리케이션을 켭니다. **이것은 반드시 C++에서 해야합니다**.
 
 ```c++
 AGDPlayerState::AGDPlayerState()
